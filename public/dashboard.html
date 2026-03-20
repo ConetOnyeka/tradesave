@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Dashboard</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<h2>TradeSave Dashboard</h2>
+
+<input id="description" placeholder="Description">
+<input id="amount" placeholder="Amount">
+
+<select id="type">
+<option value="income">Income</option>
+<option value="expense">Expense</option>
+</select>
+
+<button onclick="addTransaction()">Add</button>
+
+
+<h3>Financial Summary</h3>
+<p>Total Income: ₦<span id="income">0</span></p>
+<p>Total Expense: ₦<span id="expense">0</span></p>
+<p>Profit: ₦<span id="profit">0</span></p>
+
+<h3>Financial Chart</h3>
+<canvas id="financeChart" width="900" height="200"></canvas>
+
+<h3>Transactions</h3>
+<ul id="list"></ul>
+
+<h3>Savings Goal</h3>
+<input id="goal" placeholder="Savings Goal Amount">
+<button onclick="setGoal()">Set Goal</button>
+<p>Goal: ₦<span id="goalAmount">0</span></p>
+
+<h3>Credit Score</h3>
+<p>Your Score: <span id="score"></span></p>
+
+<h3>Financial Tip</h3>
+<p id="tip"></p>
+
+<script src="script.js"></script>
+
+</body>
+</html>
