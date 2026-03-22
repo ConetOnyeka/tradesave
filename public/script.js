@@ -1,113 +1,146 @@
-const API_URL = "https://tradesave.onrender.com";
-
 async function loadTransactions() {
+
   try {
-    const res = await fetch(`${API_URL}/api/transactions`);
+
+    const res = await fetch("/api/transactions")
 
     if (!res.ok) {
-      console.error("Failed to fetch transactions");
-      return;
+      console.error("Failed to fetch transactions")
+      return
     }
 
-    const data = await res.json();
+    const data = await res.json()
 
-    const list = document.getElementById("list");
-    if (!list) return;
+    const list = document.getElementById("list")
+    if (!list) return
 
-    list.innerHTML = "";
+    list.innerHTML = ""
 
-    let income = 0;
-    let expense = 0;
+    let income = 0
+    let expense = 0
 
-    data.forEach((t) => {
-      const li = document.createElement("li");
+    data.forEach(t => {
 
-      const type = t.type || "unknown";
-      const description = t.description || "";
-      const amount = Number(t.amount) || 0;
+      const li = document.createElement("li")
 
-      li.innerText = `${type} - ${description} - ₦${amount}`;
+      // safer formatting
+      const type = t.type || "unknown"
+      const description = t.description || ""
+      const amount = Number(t.amount) || 0
 
-      list.appendChild(li);
+      li.innerText = `${type} - ${description} - ₦${amount}`
 
-      if (type === "income") income += amount;
-      if (type === "expense") expense += amount;
-    });
+      list.appendChild(li)
 
-    const incomeEl = document.getElementById("income");
-    const expenseEl = document.getElementById("expense");
-    const profitEl = document.getElementById("profit");
+      if (type === "income") {
+        income += amount
+      }
 
-    if (incomeEl) incomeEl.innerText = income;
-    if (expenseEl) expenseEl.innerText = expense;
-    if (profitEl) profitEl.innerText = income - expense;
+      if (type === "expense") {
+        expense += amount
+      }
 
-    updateScore(income);
-    drawChart(income, expense);
+    })
+
+    // check elements before updating
+    const incomeEl = document.getElementById("income")
+    const expenseEl = document.getElementById("expense")
+    const profitEl = document.getElementById("profit")
+
+    if (incomeEl) incomeEl.innerText = income
+    if (expenseEl) expenseEl.innerText = expense
+    if (profitEl) profitEl.innerText = income - expense
+
+    updateScore(income)
+    drawChart(income, expense)
+
   } catch (err) {
-    console.error("Error loading transactions:", err);
+    console.error("Error loading transactions:", err)
   }
 }
 
+
+/* -------------------------
+ADD TRANSACTION (IMPROVED)
+------------------------- */
+
 window.addTransaction = async function () {
-  const description = document.getElementById("description");
-  const amount = document.getElementById("amount");
-  const type = document.getElementById("type");
+
+  console.log("Button clicked")
+
+  const description = document.getElementById("description")
+  const amount = document.getElementById("amount")
+  const type = document.getElementById("type")
 
   if (!description || !amount || !type) {
-    console.error("Missing input fields");
-    return;
+    console.error("Missing input fields")
+    return
   }
 
   if (!description.value || !amount.value) {
-    alert("Please fill all fields");
-    return;
+    alert("Please fill all fields")
+    return
   }
 
   try {
-    const res = await fetch(`${API_URL}/api/add-transaction`, {
+
+    await fetch("/api/add-transaction", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         description: description.value,
-        amount: Number(amount.value),
-        type: type.value,
-      }),
-    });
+        amount: amount.value,
+        type: type.value
+      })
+    })
 
-    if (!res.ok) {
-      console.error("Failed to add transaction");
-      return;
-    }
+    loadTransactions()
 
-    loadTransactions();
+    // clear inputs
+    description.value = ""
+    amount.value = ""
 
-    description.value = "";
-    amount.value = "";
   } catch (err) {
-    console.error("Error adding transaction:", err);
+    console.error("Error adding transaction:", err)
   }
-};
-
-function setGoal() {
-  const goalInput = document.getElementById("goal");
-  if (!goalInput) return;
-
-  const goal = Number(goalInput.value) || 0;
-
-  localStorage.setItem("goal", goal);
-
-  const goalAmount = document.getElementById("goalAmount");
-  if (goalAmount) goalAmount.innerText = goal;
 }
 
+
+/* -------------------------
+SET GOAL
+------------------------- */
+
+function setGoal() {
+
+  const goalInput = document.getElementById("goal")
+
+  if (!goalInput) return
+
+  const goal = goalInput.value
+
+  localStorage.setItem("goal", goal)
+
+  const goalAmount = document.getElementById("goalAmount")
+  if (goalAmount) goalAmount.innerText = goal
+}
+
+
+/* -------------------------
+LOAD SAVED GOAL
+------------------------- */
+
 document.addEventListener("DOMContentLoaded", () => {
-  const goalAmount = document.getElementById("goalAmount");
+
+  const goalAmount = document.getElementById("goalAmount")
   if (goalAmount) {
-    goalAmount.innerText = localStorage.getItem("goal") || 0;
+    goalAmount.innerText = localStorage.getItem("goal") || 0
   }
+
+  /* -------------------------
+  RANDOM TIP
+  ------------------------- */
 
   const tips = [
     "Save at least 10% of your daily profit.",
@@ -115,52 +148,73 @@ document.addEventListener("DOMContentLoaded", () => {
     "Record every sale and expense.",
     "Restock only fast selling products.",
     "Avoid unnecessary borrowing.",
-    "Stop spending more than your income.",
-  ];
+    "Stop spending more than your income."
+  ]
 
-  const tipEl = document.getElementById("tip");
+  const tipEl = document.getElementById("tip")
   if (tipEl) {
-    tipEl.innerText = tips[Math.floor(Math.random() * tips.length)];
+    tipEl.innerText = tips[Math.floor(Math.random() * tips.length)]
   }
 
-  loadTransactions();
-});
+  /* -------------------------
+  LOAD DATA ON START
+  ------------------------- */
+
+  loadTransactions()
+})
+
+
+/* -------------------------
+UPDATE SCORE
+------------------------- */
 
 function updateScore(income) {
-  let score = 0;
 
-  if (income > 10000) score = 50;
-  if (income > 50000) score = 70;
-  if (income > 100000) score = 90;
+  let score = 0
 
-  const scoreEl = document.getElementById("score");
-  if (scoreEl) scoreEl.innerText = score;
+  if (income > 10000) score = 50
+  if (income > 50000) score = 70
+  if (income > 100000) score = 90
+
+  const scoreEl = document.getElementById("score")
+  if (scoreEl) scoreEl.innerText = score
 }
 
-let chart;
+
+/* -------------------------
+CHART
+------------------------- */
+
+let chart
 
 function drawChart(income, expense) {
-  const ctx = document.getElementById("financeChart");
-  if (!ctx) return;
 
-  const chartCtx = ctx.getContext("2d");
+  const ctx = document.getElementById("financeChart")
+  if (!ctx) return
 
-  if (chart) chart.destroy();
+  const chartCtx = ctx.getContext("2d")
+
+  if (chart) {
+    chart.destroy()
+  }
 
   chart = new Chart(chartCtx, {
     type: "bar",
     data: {
       labels: ["Income", "Expense"],
-      datasets: [
-        {
-          label: "Financial Overview",
-          data: [income, expense],
-        },
-      ],
-    },
-  });
+      datasets: [{
+        label: "Financial Overview",
+        data: [income, expense]
+      }]
+    }
+  })
 }
 
+
+/* -------------------------
+NAVIGATION
+------------------------- */
+
 function openDashboard() {
-  window.location.href = "dashboard.html";
+  window.location.href = "dashboard.html"
 }
