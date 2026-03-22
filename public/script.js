@@ -23,7 +23,6 @@ async function loadTransactions() {
 
       const li = document.createElement("li")
 
-      // safer formatting
       const type = t.type || "unknown"
       const description = t.description || ""
       const amount = Number(t.amount) || 0
@@ -32,17 +31,11 @@ async function loadTransactions() {
 
       list.appendChild(li)
 
-      if (type === "income") {
-        income += amount
-      }
-
-      if (type === "expense") {
-        expense += amount
-      }
+      if (type === "income") income += amount
+      if (type === "expense") expense += amount
 
     })
 
-    // check elements before updating
     const incomeEl = document.getElementById("income")
     const expenseEl = document.getElementById("expense")
     const profitEl = document.getElementById("profit")
@@ -61,12 +54,10 @@ async function loadTransactions() {
 
 
 /* -------------------------
-ADD TRANSACTION (IMPROVED)
+ADD TRANSACTION (FINAL FIX)
 ------------------------- */
 
 window.addTransaction = async function () {
-
-  console.log("Button clicked")
 
   const description = document.getElementById("description")
   const amount = document.getElementById("amount")
@@ -84,21 +75,25 @@ window.addTransaction = async function () {
 
   try {
 
-    await fetch("/api/add-transaction", {
+    const res = await fetch("/api/add-transaction", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
         description: description.value,
-        amount: amount.value,
+        amount: Number(amount.value), // ✅ FIXED
         type: type.value
       })
     })
 
+    if (!res.ok) {
+      console.error("Failed to add transaction")
+      return
+    }
+
     loadTransactions()
 
-    // clear inputs
     description.value = ""
     amount.value = ""
 
@@ -115,10 +110,9 @@ SET GOAL
 function setGoal() {
 
   const goalInput = document.getElementById("goal")
-
   if (!goalInput) return
 
-  const goal = goalInput.value
+  const goal = Number(goalInput.value) || 0
 
   localStorage.setItem("goal", goal)
 
@@ -138,10 +132,6 @@ document.addEventListener("DOMContentLoaded", () => {
     goalAmount.innerText = localStorage.getItem("goal") || 0
   }
 
-  /* -------------------------
-  RANDOM TIP
-  ------------------------- */
-
   const tips = [
     "Save at least 10% of your daily profit.",
     "Separate business money from personal money.",
@@ -155,10 +145,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (tipEl) {
     tipEl.innerText = tips[Math.floor(Math.random() * tips.length)]
   }
-
-  /* -------------------------
-  LOAD DATA ON START
-  ------------------------- */
 
   loadTransactions()
 })
@@ -194,9 +180,7 @@ function drawChart(income, expense) {
 
   const chartCtx = ctx.getContext("2d")
 
-  if (chart) {
-    chart.destroy()
-  }
+  if (chart) chart.destroy()
 
   chart = new Chart(chartCtx, {
     type: "bar",
