@@ -34,10 +34,10 @@ app.post("/api/add-transaction", async (req, res) => {
     }
 
     const transaction = new Transaction({
-      userId,
-      type,
-      description,
-      amount
+       userId,   // 🔥 MUST EXIST
+       type,
+       description,
+       amount
     })
 
     await transaction.save()
