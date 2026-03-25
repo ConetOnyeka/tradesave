@@ -27,38 +27,49 @@ ADD TRANSACTION
 ------------------------- */
 app.post("/api/add-transaction", async (req, res) => {
   try {
-    const { type, description, amount } = req.body;
+    const { type, description, amount, userId } = req.body
+
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" })
+    }
 
     const transaction = new Transaction({
+      userId,
       type,
       description,
-      amount: Number(amount)
-    });
+      amount
+    })
 
-    await transaction.save();
+    await transaction.save()
 
-    res.json({ message: "Transaction added successfully" });
+    res.json({ message: "Transaction saved successfully" })
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server error" });
+    console.error(error)
+    res.status(500).json({ error: "Server error" })
   }
-});
-
+})
 /* -------------------------
 GET TRANSACTIONS
 ------------------------- */
 app.get("/api/transactions", async (req, res) => {
   try {
-    const transactions = await Transaction.find().sort({ date: -1 });
-    res.json(transactions);
+    const userId = req.query.userId
+    
+
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" })
+    }
+
+    const transactions = await Transaction.find({ userId }).sort({ date: -1 })
+
+    res.json(transactions)
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server error" });
+    console.error(error)
+    res.status(500).json({ error: "Server error" })
   }
-});
-
+})
 /* -------------------------
 START SERVER
 ------------------------- */

@@ -1,8 +1,19 @@
+let userId = localStorage.getItem("userId")
+
+if (!userId) {
+  userId = "user_" + Math.random().toString(36).substring(2)
+  localStorage.setItem("userId", userId)
+}
+
+
+
+
+
 async function loadTransactions() {
 
   try {
 
-    const res = await fetch("/api/transactions")
+    const res = await fetch(`/api/transactions?userId=${userId}`)
 
     if (!res.ok) {
       console.error("Failed to fetch transactions")
@@ -92,7 +103,8 @@ window.addTransaction = async function () {
       body: JSON.stringify({
         description: description.value,
         amount: amount.value,
-        type: type.value
+        type: type.value,
+        userId   // 🔥 ADDED
       })
     })
 
@@ -217,4 +229,49 @@ NAVIGATION
 
 function openDashboard() {
   window.location.href = "dashboard.html"
+}
+
+
+function downloadTransactions(){
+fetch(`/api/transactions?userId=${userId}`)
+fetch("/api/transactions")
+.then(res => res.json())
+.then(data => {
+
+if(!Array.isArray(data)) return alert("No data to download")
+
+
+// CSV Header
+let csv = "Type,Description,Amount,Date\n"
+data.forEach(t => {
+csv += `${t.type},${t.description},${t.amount},${new Date(t.date).toLocaleString()}\n`
+})
+
+
+
+// Add rows
+data.forEach(t => {
+csv += `${t.type},${t.description},${t.amount},${new Date(t.date).toLocaleString()}\n`
+})
+
+// Create file
+const blob = new Blob([csv], { type: "text/csv" })
+const url = window.URL.createObjectURL(blob)
+
+// Create download link
+const a = document.createElement("a")
+a.href = url
+a.download = "tradesave-transactions.csv"
+
+document.body.appendChild(a)
+a.click()
+document.body.removeChild(a)
+
+})
+
+.catch(err => {
+console.error(err)
+alert("Download failed")
+})
+
 }
