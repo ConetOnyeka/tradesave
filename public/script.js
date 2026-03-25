@@ -1,3 +1,7 @@
+
+const API_URL = "https://tradesave-1.onrender.com"; // 🔥 CHANGE THIS TO YOUR REAL URL
+
+
 let userId = localStorage.getItem("userId")
 
 if (!userId) {
@@ -13,7 +17,7 @@ async function loadTransactions() {
 
   try {
 
-    const res = await fetch(`/api/transactions?userId=${userId}`)
+     const res = await fetch(`${API_URL}/api/transactions?userId=${userId}`);
 
     if (!res.ok) {
       console.error("Failed to fetch transactions")
@@ -95,14 +99,14 @@ window.addTransaction = async function () {
 
   try {
 
-    await fetch("/api/add-transaction", {
+    await fetch(`${API_URL}/api/add-transaction`,{
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
         description: description.value,
-        amount: amount.value,
+        amount: Number(amount.value),
         type: type.value,
         userId   // 🔥 ADDED
       })
@@ -232,13 +236,14 @@ function openDashboard() {
 }
 
 
-function downloadTransactions(){
-fetch(`/api/transactions?userId=${userId}`)
-fetch("/api/transactions")
-.then(res => res.json())
-.then(data => {
+function downloadTransactions() {
+ fetch(`${API_URL}/api/transactions?userId=${userId}`)
+    .then(res => res.json())
+    .then(data => {
 
-if(!Array.isArray(data)) return alert("No data to download")
+      if (!Array.isArray(data)) {
+        return alert("No data to download");
+      }
 
 
 // CSV Header
@@ -267,11 +272,10 @@ document.body.appendChild(a)
 a.click()
 document.body.removeChild(a)
 
-})
-
-.catch(err => {
-console.error(err)
-alert("Download failed")
-})
-
+   })
+    .catch(err => {
+      console.error(err);
+      alert("Download failed");
+    });
 }
+
