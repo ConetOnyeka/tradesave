@@ -235,9 +235,8 @@ function openDashboard() {
   window.location.href = "dashboard.html"
 }
 
-
 function downloadTransactions() {
- fetch(`${API_URL}/api/transactions?userId=${userId}`)
+  fetch(`${API_URL}/api/transactions?userId=${userId}`)
     .then(res => res.json())
     .then(data => {
 
@@ -245,37 +244,26 @@ function downloadTransactions() {
         return alert("No data to download");
       }
 
+      let csv = "Type,Description,Amount,Date\n";
 
-// CSV Header
-let csv = "Type,Description,Amount,Date\n"
-data.forEach(t => {
-csv += `${t.type},${t.description},${t.amount},${new Date(t.date).toLocaleString()}\n`
-})
+      data.forEach(t => {
+        csv += `${t.type},${t.description},${t.amount},${new Date(t.date).toLocaleString()}\n`;
+      });
 
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
 
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "tradesave-transactions.csv";
 
-// Add rows
-data.forEach(t => {
-csv += `${t.type},${t.description},${t.amount},${new Date(t.date).toLocaleString()}\n`
-})
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
 
-// Create file
-const blob = new Blob([csv], { type: "text/csv" })
-const url = window.URL.createObjectURL(blob)
-
-// Create download link
-const a = document.createElement("a")
-a.href = url
-a.download = "tradesave-transactions.csv"
-
-document.body.appendChild(a)
-a.click()
-document.body.removeChild(a)
-
-   })
+    })
     .catch(err => {
       console.error(err);
       alert("Download failed");
     });
 }
-
